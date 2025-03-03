@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "405039270181",
+    "project_id": "android-md1",
+    "storage_bucket": "android-md1.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:405039270181:android:19aa203c31cb0cb023b2cc",
+        "android_client_info": {
+          "package_name": "com.example.cameraxapp"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyCB7yvmvDm5ZrCpwk45SPtQdUD_dURUqQo"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

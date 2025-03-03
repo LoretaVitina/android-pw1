@@ -1,13 +1,37 @@
 <?xml version="1.0" encoding="utf-8"?>
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:orientation="vertical"
-    android:gravity="center">
+    tools:context=".AudioActivity">
 
-    <TextView
+    <!-- Toolbar -->
+    <androidx.appcompat.widget.Toolbar
+        android:id="@+id/toolbar"
+        android:layout_width="match_parent"
+        android:layout_height="?attr/actionBarSize"
+        android:background="?attr/colorPrimary"
+        app:popupTheme="@style/ThemeOverlay.AppCompat.Light"
+        app:title="Audio Recorder"
+        app:menu="@menu/audio_menu" />
+
+    <!-- Record Button -->
+    <Button
+        android:id="@+id/btnRecord"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="Audio Recording Screen"
-        android:textSize="24sp"/>
+        android:text="Record"
+        android:layout_gravity="center"
+        android:layout_margin="16dp" />
+
+    <!-- ListView for displaying recorded files -->
+    <ListView
+        android:id="@+id/audioListView"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:divider="@android:color/darker_gray"
+        android:dividerHeight="1dp" />
+
 </LinearLayout>

@@ -2,18 +2,26 @@ package com.example.cameraxapp
 
 import android.content.Intent
 import android.os.Bundle
+import android.view.Menu
+import android.view.MenuItem
 import android.widget.Button
+import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
+import androidx.appcompat.widget.Toolbar
 import androidx.camera.core.*
 import androidx.camera.lifecycle.ProcessCameraProvider
 import androidx.camera.view.PreviewView
 import androidx.core.content.ContextCompat
-import androidx.lifecycle.LifecycleOwner
 import java.io.File
-import java.text.SimpleDateFormat
-import java.util.*
+import java.util.concurrent.ExecutorService
+import java.util.concurrent.Executors
+import com.google.firebase.analytics.FirebaseAnalytics
+import com.google.firebase.analytics.ktx.analytics
+import com.google.firebase.ktx.Firebase
 
 class MainActivity : AppCompatActivity() {
+    private lateinit var firebaseAnalytics: FirebaseAnalytics
+    private lateinit var cameraExecutor: ExecutorService
     private lateinit var outputDirectory: File
     private lateinit var imageCapture: ImageCapture
 
@@ -21,66 +29,68 @@ class MainActivity : AppCompatActivity() {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
 
-        val viewFinder = findViewById<PreviewView>(R.id.viewFinder)
-        val btnTakePicture = findViewById<Button>(R.id.image_capture_button)
-        val btnAudio = findViewById<Button>(R.id.btn_audio)
-        val btnShowImages = findViewById<Button>(R.id.btn_show_images)
-        val btnDeleteImages = findViewById<Button>(R.id.btn_delete_images)
+        firebaseAnalytics = FirebaseAnalytics.getInstance(this)
 
+        // Log screen view
+        logScreenEvent("MainActivity")
+
+        // Toolbar setup
+        val toolbar = findViewById<Toolbar>(R.id.toolbar)
+        setSupportActionBar(toolbar)
+
+        // Ensure support action bar is properly set
+        supportActionBar?.apply {
+            title = "Camera App"
+        }
+
+        // Camera
+        startCamera()
+
+        // Get output directory
         outputDirectory = getOutputDirectory()
 
-        startCamera(viewFinder)
+        // Button to take picture
+        findViewById<Button>(R.id.btnTakePicture).setOnClickListener {
+            takePhoto()
+            logEvent("take_picture_clicked")
+        }
 
-        btnTakePicture.setOnClickListener { takePhoto() }
-        btnAudio.setOnClickListener {
-            val intent = Intent(this, AudioActivity::class.java)
-            startActivity(intent)
-        }
-        btnShowImages.setOnClickListener {
-            val intent = Intent(this, ImageGalleryActivity::class.java)
-            startActivity(intent)
-        }
-        btnDeleteImages.setOnClickListener { deleteAllImages() }
+        cameraExecutor = Executors.newSingleThreadExecutor()
     }
 
-    private fun startCamera(viewFinder: PreviewView) {
+    private fun startCamera() {
         val cameraProviderFuture = ProcessCameraProvider.getInstance(this)
+
         cameraProviderFuture.addListener({
             val cameraProvider: ProcessCameraProvider = cameraProviderFuture.get()
             val preview = Preview.Builder().build().also {
-                it.setSurfaceProvider(viewFinder.surfaceProvider)
+                it.setSurfaceProvider(findViewById<PreviewView>(R.id.viewFinder).surfaceProvider)
             }
             imageCapture = ImageCapture.Builder().build()
             val cameraSelector = CameraSelector.DEFAULT_BACK_CAMERA
-            try {
-                cameraProvider.unbindAll()
-                cameraProvider.bindToLifecycle(
-                    this as LifecycleOwner, cameraSelector, preview, imageCapture
-                )
-            } catch (e: Exception) {
-                e.printStackTrace()
-            }
+
+            cameraProvider.unbindAll()
+            cameraProvider.bindToLifecycle(this, cameraSelector, preview, imageCapture)
         }, ContextCompat.getMainExecutor(this))
     }
 
     private fun takePhoto() {
-        val fileName = "IMG_${SimpleDateFormat("yyyyMMdd_HHmmss", Locale.US).format(Date())}.jpg"
-        val file = File(outputDirectory, fileName)
+        val file = File(outputDirectory, "${System.currentTimeMillis()}.jpg")
         val outputOptions = ImageCapture.OutputFileOptions.Builder(file).build()
 
-        imageCapture.takePicture(outputOptions, ContextCompat.getMainExecutor(this),
+        imageCapture.takePicture(
+            outputOptions,
+            ContextCompat.getMainExecutor(this),
             object : ImageCapture.OnImageSavedCallback {
-                override fun onImageSaved(output: ImageCapture.OutputFileResults) {
-                    println("Saved: ${file.absolutePath}")
+                override fun onImageSaved(outputFileResults: ImageCapture.OutputFileResults) {
+                    Toast.makeText(applicationContext, "Image saved!", Toast.LENGTH_SHORT).show()
                 }
-                override fun onError(exception: ImageCaptureException) {
-                    exception.printStackTrace()
-                }
-            })
-    }
 
-    private fun deleteAllImages() {
-        outputDirectory.listFiles()?.forEach { it.delete() }
+                override fun onError(exception: ImageCaptureException) {
+                    Toast.makeText(applicationContext, "Failed to take photo", Toast.LENGTH_SHORT).show()
+                }
+            }
+        )
     }
 
     private fun getOutputDirectory(): File {
@@ -88,5 +98,51 @@ class MainActivity : AppCompatActivity() {
             File(it, resources.getString(R.string.app_name)).apply { mkdirs() }
         }
         return mediaDir ?: filesDir
+    }
+
+    override fun onCreateOptionsMenu(menu: Menu): Boolean {
+        menuInflater.inflate(R.menu.top_menu, menu)
+        return true
+    }
+
+    override fun onOptionsItemSelected(item: MenuItem): Boolean {
+        return when (item.itemId) {
+            R.id.action_audio -> {
+                startActivity(Intent(this, AudioActivity::class.java))
+                true
+            }
+            R.id.action_show_images -> {
+                startActivity(Intent(this, ImageGalleryActivity::class.java))
+                true
+            }
+            R.id.action_delete_images -> {
+                deleteAllImages()
+                true
+            }
+            else -> super.onOptionsItemSelected(item)
+        }
+    }
+
+    private fun deleteAllImages() {
+        val directory = getOutputDirectory()
+        directory.listFiles()?.forEach { it.delete() }
+        Toast.makeText(this, "All images deleted", Toast.LENGTH_SHORT).show()
+    }
+
+    private fun logEvent(eventName: String) {
+        val bundle = Bundle()
+        bundle.putString("event_name", eventName)
+        firebaseAnalytics.logEvent(eventName, bundle)
+    }
+
+    private fun logScreenEvent(screenName: String) {
+        val bundle = Bundle()
+        bundle.putString(FirebaseAnalytics.Param.SCREEN_NAME, screenName)
+        firebaseAnalytics.logEvent(FirebaseAnalytics.Event.SCREEN_VIEW, bundle)
+    }
+
+    override fun onDestroy() {
+        super.onDestroy()
+        cameraExecutor.shutdown()
     }
 }
