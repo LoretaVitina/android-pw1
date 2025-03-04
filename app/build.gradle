@@ -46,6 +46,7 @@ dependencies {
     implementation libs.material
     implementation libs.androidx.activity
     implementation libs.androidx.constraintlayout
+    implementation libs.play.services.measurement.api
     testImplementation libs.junit
     androidTestImplementation libs.androidx.junit
     androidTestImplementation libs.androidx.espresso.core
@@ -56,6 +57,10 @@ dependencies {
     implementation(libs.camera.video)
     implementation(libs.camera.view)
     implementation(libs.camera.extensions)
+    implementation 'com.google.android.gms:play-services-measurement-base:22.3.0'
+    implementation 'com.google.android.gms:play-services-measurement-impl:22.3.0'
+    implementation 'com.google.android.gms:play-services-measurement-sdk-api:22.3.0'
+    implementation 'com.google.android.gms:play-services-measurement:22.3.0'
     implementation 'com.github.bumptech.glide:glide:4.15.0' // Add Glide dependency
     annotationProcessor 'com.github.bumptech.glide:compiler:4.15.0' // Add Glide compiler for annotations
     implementation("com.google.firebase:firebase-analytics-ktx:21.5.0")
