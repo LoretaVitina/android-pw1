@@ -77,7 +77,7 @@ class AudioActivity : AppCompatActivity() {
             playAudio(File(outputDirectory, fileName))
         }
 
-        // Request permissions
+//        // Request permissions
         requestPermissions()
     }
 
@@ -114,19 +114,6 @@ class AudioActivity : AppCompatActivity() {
         audioAdapter.notifyDataSetChanged()
     }
 
-    private fun playAudio(file: File) {
-        mediaPlayer?.release()
-        mediaPlayer = MediaPlayer().apply {
-            try {
-                setDataSource(file.absolutePath)
-                prepare()
-                start()
-            } catch (e: IOException) {
-                Toast.makeText(this@AudioActivity, "Playback failed", Toast.LENGTH_SHORT).show()
-            }
-        }
-    }
-
     private fun getAudioDirectory(): File {
         val dir = File(externalCacheDir, "AudioRecordings")
         if (!dir.exists()) dir.mkdirs()
@@ -140,6 +127,19 @@ class AudioActivity : AppCompatActivity() {
         }
     }
 
+    private fun playAudio(file: File) {
+        mediaPlayer?.release()
+        mediaPlayer = MediaPlayer().apply {
+            try {
+                setDataSource(file.absolutePath)
+                prepare()
+                start()
+            } catch (e: IOException) {
+                Toast.makeText(this@AudioActivity, "Playback failed", Toast.LENGTH_SHORT).show()
+            }
+        }
+    }
+
     private fun deleteAllRecordings() {
         outputDirectory.listFiles()?.forEach { it.delete() }
         audioFiles.clear()
@@ -148,7 +148,7 @@ class AudioActivity : AppCompatActivity() {
         logEvent("audio_deleted")
     }
 
-    // Request audio permissions
+//    // Request audio permissions
     private fun requestPermissions() {
         val permissions = arrayOf(Manifest.permission.RECORD_AUDIO, Manifest.permission.WRITE_EXTERNAL_STORAGE)
         if (permissions.any { ContextCompat.checkSelfPermission(this, it) != PackageManager.PERMISSION_GRANTED }) {
