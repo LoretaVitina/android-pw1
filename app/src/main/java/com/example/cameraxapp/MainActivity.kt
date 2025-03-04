@@ -3,10 +3,12 @@ package com.example.cameraxapp
 import android.Manifest
 import android.content.Intent
 import android.content.pm.PackageManager
+import android.net.Uri
 import android.os.Bundle
 import android.view.Menu
 import android.view.MenuItem
 import android.widget.Button
+import android.widget.ImageView
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
 import androidx.appcompat.widget.Toolbar
@@ -98,6 +100,10 @@ class MainActivity : AppCompatActivity() {
             object : ImageCapture.OnImageSavedCallback {
                 override fun onImageSaved(outputFileResults: ImageCapture.OutputFileResults) {
                     Toast.makeText(applicationContext, "Image saved!", Toast.LENGTH_SHORT).show()
+
+                    // Display the thumbnail
+                    val imageView = findViewById<ImageView>(R.id.imgThumbnail)
+                    imageView.setImageURI(Uri.fromFile(file))
                 }
 
                 override fun onError(exception: ImageCaptureException) {
@@ -106,6 +112,7 @@ class MainActivity : AppCompatActivity() {
             }
         )
     }
+
 
     private fun getOutputDirectory(): File {
         val mediaDir = externalMediaDirs.firstOrNull()?.let {

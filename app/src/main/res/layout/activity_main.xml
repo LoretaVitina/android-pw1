@@ -34,6 +34,17 @@
             app:layout_constraintBottom_toTopOf="@id/btnTakePicture"
             android:background="@android:color/black"/>
 
+        <ImageView
+            android:id="@+id/imgThumbnail"
+            android:layout_width="100dp"
+            android:layout_height="100dp"
+            android:scaleType="centerCrop"
+            app:layout_constraintBottom_toTopOf="@id/btnTakePicture"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            android:layout_marginBottom="16dp"/>
+
+
         <!-- Take Picture Button -->
         <Button
             android:id="@+id/btnTakePicture"
